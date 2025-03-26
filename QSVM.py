@@ -20,7 +20,7 @@ encoder = LabelEncoder()
 y = encoder.fit_transform(labels)
 
 # Define number of qubits
-n_qubits = 6
+n_qubits = 8
 
 # Quantum device
 dev = qml.device("default.qubit", wires=n_qubits)

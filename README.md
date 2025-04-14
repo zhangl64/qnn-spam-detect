@@ -3,7 +3,7 @@
 ## Overview
 We are excited to present a project that leverages quantum computing and machine learning to detect spam email effectively.
 
-![Quantum Spam diagram.png](Quantum Spam diagram.png "pipeline")
+![Quantum_Spam_diagram.png](Quantum_Spam_diagram.png "pipeline")
 
 
 ## Installation & Usage

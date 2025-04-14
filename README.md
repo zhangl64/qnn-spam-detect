@@ -16,8 +16,18 @@ git clone https://github.com/zhangl64/qnn-spam-detect.git
 ```
 cd qnn-spam-detect
 ```
+Install the additional Python packages required:
+
+```
+python3 -m pip install -r requirements.txt
+```
+
+Run first two cells of ```dataPrep.ipynb ```to install data.
+
+
 
 Run the model using the following command:
+
 ```
 python main.py
 ```
@@ -31,4 +41,4 @@ If you use this project or its findings, please cite it as follows:
 ```
 
 ## Contact
-For any inquiries, please reach out via email at ainazj1@umbc.edu.
+For any inquiries, please reach out via email at ainazj1@umbc.edu. , dkm26@umbc.edu

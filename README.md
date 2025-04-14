@@ -11,7 +11,7 @@ We are excited to present a project that leverages quantum computing and machine
 To get started with this project, clone the repository and install the required dependencies:
 
 ```bash
-git clone [https://github.com/ajam74001/FakeNews-Detection_Quantum-ML-Approach.git](https://github.com/zhangl64/qnn-spam-detect.git)
+git clone https://github.com/zhangl64/qnn-spam-detect.git
 ```
 ```
 cd qnn-spam-detect

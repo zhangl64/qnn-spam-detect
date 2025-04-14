@@ -36,7 +36,7 @@ conda env create -f environment.yml
 
 5. Run the first two cells of ```dataPrep.ipynb ```to install the data.
 
-
+Make sure the dataset files are in the same directory as the main script.
 
 6. Run the quantum model using the following command:
 

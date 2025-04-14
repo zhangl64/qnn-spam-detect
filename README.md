@@ -8,7 +8,7 @@ We are excited to present a project that leverages quantum computing and machine
 
 ## Installation & Usage
 
-To get started with this project, clone the repository and install the required dependencies:
+1. To get started with this project, clone the repository and install the required dependencies:
 
 ```bash
 git clone https://github.com/zhangl64/qnn-spam-detect.git
@@ -16,15 +16,15 @@ git clone https://github.com/zhangl64/qnn-spam-detect.git
 ```
 cd qnn-spam-detect
 ```
-Create a new virtual environment with Python **3.9.20** version: 
+2. Create a new virtual environment with Python **3.9.20** version: 
 ```
 conda create -n qml python=3.9.20 anaconda
 ```
-Activate the new environment: 
+3. Activate the new environment: 
 ```
 conda activate qml
 ```
-Install the additional Python packages required:
+4. Install the additional Python packages required:
 
 ```
 python3 -m pip install -r requirements.txt
@@ -34,11 +34,11 @@ OR if anaconda installed, use
 conda env create -f environment.yml
 ```
 
-Run first two cells of ```dataPrep.ipynb ```to install data.
+5. Run the first two cells of ```dataPrep.ipynb ```to install the data.
 
 
 
-Run the model using the following command:
+6. Run the quantum model using the following command:
 
 ```
 python main.py

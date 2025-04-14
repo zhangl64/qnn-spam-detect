@@ -36,7 +36,12 @@ Run the model using the following command:
 python main.py
 ```
 
+## Citation
+If you use this project or its findings, please cite it as follows:
 
+```
+
+```
 
 
 ## Contact

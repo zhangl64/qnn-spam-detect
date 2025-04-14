@@ -1,4 +1,3 @@
-"""maybe add other metrics """ 
 import pennylane as qml
 from pennylane import numpy as np
 import torch
@@ -8,6 +7,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.decomposition import PCA
 from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import matthews_corrcoef
+
 
 import wandb
 import numpy as np
@@ -31,25 +32,29 @@ set_seed(seed)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize WandB
-wandb.init(project="Quantum-Spam-classification", config={
+wandb.init(project="Trec_Quantum-Spam-classification", config={
     "epochs": 10, # 
-    "batch_size": 64,
-    "learning_rate": 0.001,
-    "n_qubits": 4, # from 2 to 4 
-    "k_folds": 5
+    "batch_size": 16,
+    "learning_rate": 0.0005,
+    "n_qubits": 8, # from 2 to 4 
+    "k_folds": 5,
+    "n_quantum_layers": 3,
 })
 config = wandb.config
 
 
 
 
-df = pd.read_csv("/home/ainazj1/.cache/kagglehub/datasets/imdeepmind/preprocessed-trec-2007-public-corpus-dataset/versions/1/processed_data.csv")
+df = pd.read_csv("path to trec dataset/processed_data.csv")
+# df= pd.read_csv("Path to Kaggle dataset/spam-filter/versions/1/emails.csv")
 df = df.dropna(subset=['message'])
+# df = df.dropna(subset=['text'])
 
 # print(data.shape)
 # print(data.head())
 labels = df["label"]
 texts = df["message"]
+# texts = df["text"]
 print(df["label"].value_counts())
 
 # Encode labels
@@ -72,26 +77,10 @@ class SpamDataset(Dataset):
 n_qubits = config.n_qubits
 dev = qml.device("default.qubit", wires=n_qubits)
 
-@qml.qnode(dev, interface='torch', diff_method='backprop')  # Use backpropagation
-def quantum_circuit(inputs, weights):
-    qml.templates.AngleEmbedding(inputs, wires=range(n_qubits))
-    qml.templates.BasicEntanglerLayers(weights, wires=range(n_qubits))
-    return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
 
-# Define Hybrid Model
-class HybridModel(torch.nn.Module):
-    def __init__(self):
-        super(HybridModel, self).__init__()
-        self.quantum_layer = qml.qnn.TorchLayer(quantum_circuit, {"weights": (6, n_qubits)})
-        self.fc = torch.nn.Linear(n_qubits, 2)
-    
-    def forward(self, x):
-        x = self.quantum_layer(x)
-        x = self.fc(x)
-        return x
 
 class HybridModel(torch.nn.Module):
-    def __init__(self, n_qubits, n_quantum_layers=2, n_classical_layers=2, output_dim=2):
+    def __init__(self, n_qubits, n_quantum_layers=3, n_classical_layers=2, output_dim=2):
         super(HybridModel, self).__init__()
         # Quantum circuit layers
         self.quantum_circuit = qml.qnn.TorchLayer(self.create_quantum_circuit(n_qubits, n_quantum_layers), {"weights": (n_quantum_layers, n_qubits)})
@@ -151,8 +140,9 @@ def train_one_epoch(model, optimizer, criterion, train_loader):
     precision = precision_score(all_targets, all_preds, average='binary')
     recall = recall_score(all_targets, all_preds, average='binary')
     f1 = f1_score(all_targets, all_preds, average='binary')
+    mcc = matthews_corrcoef(all_targets, all_preds)  # Compute MCC
 
-    return running_loss / len(train_loader), 100 * correct / total, precision, recall, f1
+    return running_loss / len(train_loader), 100 * correct / total, precision, recall, f1, mcc
 
 def validate_one_epoch(model, criterion, test_loader):
     model.eval()
@@ -177,8 +167,9 @@ def validate_one_epoch(model, criterion, test_loader):
     precision = precision_score(all_targets, all_preds, average='binary')
     recall = recall_score(all_targets, all_preds, average='binary')
     f1 = f1_score(all_targets, all_preds, average='binary')
+    mcc = matthews_corrcoef(all_targets, all_preds)  # Compute MCC
 
-    return running_loss / len(test_loader), 100 * correct / total, precision, recall, f1
+    return running_loss / len(test_loader), 100 * correct / total, precision, recall, f1, mcc
 
 
 # K-Fold Cross Validation
@@ -191,6 +182,7 @@ train_accuracies, val_accuracies = [], []
 train_precisions, val_precisions = [], []
 train_recalls, val_recalls = [], []
 train_f1s, val_f1s = [], []
+train_mccs, val_mccs = [], []  # Additional lists for MCC scores
 
 for fold, (train_idx, val_idx) in enumerate(kfold.split(texts)):
     print(f"Fold {fold + 1}")
@@ -217,8 +209,7 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(texts)):
     val_loader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
 
     # Initialize model and optimizer for each fold
-    # model = HybridModel().to(device)
-    model = HybridModel(n_qubits=n_qubits, n_quantum_layers=2, n_classical_layers=2, output_dim=2).to(device)
+    model = HybridModel(n_qubits=n_qubits, n_quantum_layers=3, n_classical_layers=2, output_dim=2).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     criterion = torch.nn.CrossEntropyLoss()
@@ -229,10 +220,11 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(texts)):
     fold_train_precisions, fold_val_precisions = [], []
     fold_train_recalls, fold_val_recalls = [], []
     fold_train_f1s, fold_val_f1s = [], []
+    fold_train_mccs, fold_val_mccs = [], []  # Tracking MCC for each fold
 
     for epoch in range(epochs):
-        train_loss, train_acc, train_prec, train_rec, train_f1 = train_one_epoch(model, optimizer, criterion, train_loader)
-        val_loss, val_acc, val_prec, val_rec, val_f1 = validate_one_epoch(model, criterion, val_loader)
+        train_loss, train_acc, train_prec, train_rec, train_f1, train_mcc = train_one_epoch(model, optimizer, criterion, train_loader)
+        val_loss, val_acc, val_prec, val_rec, val_f1, val_mcc = validate_one_epoch(model, criterion, val_loader)
 
         # Log metrics to WandB for each epoch and fold
         wandb.log({
@@ -246,6 +238,8 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(texts)):
             f"fold_{fold+1}_val_recall": val_rec,
             f"fold_{fold+1}_train_f1": train_f1,
             f"fold_{fold+1}_val_f1": val_f1,
+            f"fold_{fold+1}_train_mcc": train_mcc,  # Logging MCC
+            f"fold_{fold+1}_val_mcc": val_mcc,  # Logging MCC
             "epoch": epoch + 1
         })
 
@@ -259,6 +253,8 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(texts)):
         fold_val_recalls.append(val_rec)
         fold_train_f1s.append(train_f1)
         fold_val_f1s.append(val_f1)
+        fold_train_mccs.append(train_mcc)  # Store MCC
+        fold_val_mccs.append(val_mcc)  # Store MCC
 
         print(f"Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
 
@@ -273,6 +269,8 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(texts)):
     val_recalls.append(fold_val_recalls)
     train_f1s.append(fold_train_f1s)
     val_f1s.append(fold_val_f1s)
+    train_mccs.append(fold_train_mccs)  # Append fold MCCs
+    val_mccs.append(fold_val_mccs)  # Append fold MCCs
 
     # Save the model for each fold (optional)
     wandb.watch(model, log="all")
@@ -288,6 +286,8 @@ avg_train_rec = np.mean(train_recalls, axis=0)
 avg_val_rec = np.mean(val_recalls, axis=0)
 avg_train_f1 = np.mean(train_f1s, axis=0)
 avg_val_f1 = np.mean(val_f1s, axis=0)
+avg_train_mcc = np.mean(train_mccs, axis=0)  # MCC average
+avg_val_mcc = np.mean(val_mccs, axis=0)  # MCC average
 
 std_train_loss = np.std(train_losses, axis=0)
 std_val_loss = np.std(val_losses, axis=0)
@@ -299,6 +299,8 @@ std_train_rec = np.std(train_recalls, axis=0)
 std_val_rec = np.std(val_recalls, axis=0)
 std_train_f1 = np.std(train_f1s, axis=0)
 std_val_f1 = np.std(val_f1s, axis=0)
+std_train_mcc = np.std(train_mccs, axis=0)  # MCC standard deviation
+std_val_mcc = np.std(val_mccs, axis=0)  # MCC standard deviation
 
 # Log the average and standard deviation across folds
 for epoch in range(epochs):
@@ -313,6 +315,8 @@ for epoch in range(epochs):
         "avg_val_recall": avg_val_rec[epoch],
         "avg_train_f1": avg_train_f1[epoch],
         "avg_val_f1": avg_val_f1[epoch],
+        "avg_train_mcc": avg_train_mcc[epoch],  # Log MCC averages
+        "avg_val_mcc": avg_val_mcc[epoch],  # Log MCC averages
         "std_train_loss": std_train_loss[epoch],
         "std_val_loss": std_val_loss[epoch],
         "std_train_acc": std_train_acc[epoch],
@@ -323,7 +327,10 @@ for epoch in range(epochs):
         "std_val_recall": std_val_rec[epoch],
         "std_train_f1": std_train_f1[epoch],
         "std_val_f1": std_val_f1[epoch],
+        "std_train_mcc": std_train_mcc[epoch],  # Log MCC standard deviations
+        "std_val_mcc": std_val_mcc[epoch],  # Log MCC standard deviations
         "epoch": epoch + 1
     })
+
 # Finish WandB logging
 wandb.finish()

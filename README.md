@@ -35,14 +35,15 @@ Run the model using the following command:
 ```
 python main.py
 ```
-
+<!--
 ## Citation
 If you use this project or its findings, please cite it as follows:
 
 ```
 
 ```
+-->
 
 
 ## Contact
-For any inquiries, please reach out via email at ainazj1@umbc.edu. , dkm26@umbc.edu
+For any inquiries, please reach out via email at ainazj1@umbc.edu  dkm26@umbc.edu

@@ -45,7 +45,7 @@ config = wandb.config
 
 
 
-df = pd.read_csv("./processed_data.csv") # Trec Dataset
+df = pd.read_csv("Put the path to the dataset here /processed_data.csv") # Please update the directory to the dataset path obtained from the previous step. 
 # df= pd.read_csv("Path to Kaggle dataset/spam-filter/versions/1/emails.csv")
 df = df.dropna(subset=['message'])
 # df = df.dropna(subset=['text'])

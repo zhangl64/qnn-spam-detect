@@ -16,6 +16,14 @@ git clone https://github.com/zhangl64/qnn-spam-detect.git
 ```
 cd qnn-spam-detect
 ```
+Create a new virtual environment with Python 3.9.20 version: 
+```
+conda create -n qml python=3.9.19 anaconda
+```
+Activate the new environment: 
+```
+conda activate qml
+```
 Install the additional Python packages required:
 
 ```
@@ -46,4 +54,4 @@ If you use this project or its findings, please cite it as follows:
 
 
 ## Contact
-For any inquiries, please reach out via email at ainazj1@umbc.edu  dkm26@umbc.edu
+For any inquiries, please reach out via email at ainazj1@umbc.edu and dkm26@umbc.edu

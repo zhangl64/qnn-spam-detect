@@ -1,0 +1,14 @@
+name: qnn-spam-detect
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pennylane
+  - pytorch
+  - scikit-learn
+  - wandb
+  - numpy
+  - pandas
+  - pip
+  - pip:
+    - [pip 전용 패키지나 conda에서 관리되지 않는 패키지명==버전]

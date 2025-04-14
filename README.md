@@ -23,8 +23,8 @@ python3 -m pip install -r requirements.txt
 ```
 OR if anaconda installed, use 
 ```
-conda install --file requirements.txt
-```ㄴ
+conda env create -f environment.yml
+```
 
 Run first two cells of ```dataPrep.ipynb ```to install data.
 

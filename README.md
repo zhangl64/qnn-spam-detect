@@ -32,7 +32,9 @@ python3 -m pip install -r requirements.txt
 
 5. Run the following command to download the two datasets in your desired destinations:
 
-```python dataset.py```
+```
+python dataset.py
+```
 
 Please update the dataset directory path in main.py to match your local setup.
 

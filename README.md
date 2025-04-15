@@ -29,10 +29,8 @@ conda activate qml
 ```
 python3 -m pip install -r requirements.txt
 ```
-OR if anaconda installed, use 
-```
-conda env create -f environment.yml
-```
+
+
 
 5. Run the first two cells of ```dataPrep.ipynb ```to install the data.
 

@@ -9,12 +9,14 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.metrics import matthews_corrcoef
 
-
 import wandb
 import numpy as np
 import pandas as pd
 import random
 import os 
+from dataset import download_trec2007_dataset, download_spamfilter_dataset
+# Download datasets
+
 def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -43,10 +45,13 @@ wandb.init(project="Trec_Quantum-Spam-classification", config={
 config = wandb.config
 
 
-
-
-df = pd.read_csv("Put the path to the dataset here /processed_data.csv") # Please update the directory to the dataset path obtained from the previous step. 
+#df = pd.read_csv("Put the path to the dataset here /processed_data.csv")
 # df= pd.read_csv("Path to Kaggle dataset/spam-filter/versions/1/emails.csv")
+
+# Please update the function to download the dataset from Kaggle
+df = download_trec2007_dataset()
+# df = download_spamfilter_dataset()
+
 df = df.dropna(subset=['message'])
 # df = df.dropna(subset=['text'])
 

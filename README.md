@@ -30,9 +30,7 @@ conda activate qml
 python3 -m pip install -r requirements.txt
 ```
 
-
-
-5. Run the first two cells of ```dataPrep.ipynb ```to install the data.
+5. Run ```python dataset.py``` to download the two datasets in your desired destinations.
 
 Please update the dataset directory path in main.py to match your local setup.
 
